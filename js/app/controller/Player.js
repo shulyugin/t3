@@ -22,6 +22,10 @@ define(['model/AudioContext', 'model/Playlist'], function (audioContext, Playlis
     this.source.connect(audioContext.destination);
 
     var current = this.playlist.getCurrent();
+    current.getTags().then(function (tags){
+      $('#playerCover').css('background-image', 'url(src)'.replace('src', tags.coverSrc));
+    });
+
     if(current) {
       current.getAudioBuffer().then(function (audioBuffer){
         this.source.buffer = audioBuffer;

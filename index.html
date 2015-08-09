@@ -16,8 +16,19 @@
   <script data-main="js/app/init" src="js/lib/require.min.js"></script>
 </head>
 <body>
-  <label class="uploader" for="fileChooser">
-    <input id="fileChooser" type="file" multiple="multiple" name="files[]" accept="audio/*" />
-  </label>
+  <input id="fileChooser" type="file" multiple="multiple" name="files[]" accept="audio/*" />
+  <div class="player">
+    <label class="player-uploader" for="fileChooser">
+      <input id="fileChooser" type="file" multiple="multiple" name="files[]" accept="audio/*" />
+    </label>
+    <div id="playerCover" class="player-cover"></div>
+    <div class="player-control">
+      <div class="player-control-sound"></div>
+      <div class="player-control-menu"></div>
+      <div class="player-control-prev"></div>
+      <div class="player-control-next"></div>
+      <div class="player-control-play pause"></div>
+    </div>
+  </div>
 </body>
 </html>
