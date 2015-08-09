@@ -248,7 +248,7 @@ License: MIT
         drawFrame: function(v) {
             this.lastFrameValue = v;
             this.ctx.clearRect(0, 0, this.size, this.size);
-            this.drawEmptyArc(v);
+            //this.drawEmptyArc(v);
             this.drawArc(v);
         },
 

@@ -62,19 +62,31 @@
       width: 268px;
       height: 268px;
 
-      background-color: rgba(0,0,0,.32);
+      background-color: rgba(0,0,0,.38);
       border-radius: 268px/2;
     }
   }
 
   &-progress {
     position: absolute;
-    z-index: -1;
+    z-index: 2;
     top: -5px;
     left: -5px;
 
     width: 268px + 10px;
     height: 268px + 10px;
+  }
+
+  &-frequency {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    left: 0;
+
+    width: 268px;
+    height: 268px;
+
+    border-radius: 268px/2;
   }
 
   &-control {

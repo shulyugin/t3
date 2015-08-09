@@ -14,6 +14,7 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
     this.analyser.smoothingTimeConstant = 0.8;
     this.analyser.fftSize = 2048;
 
+    this.frequencyCanvas = document.getElementById('frequency');
     this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
 
     this.gain = audioContext.createGain();
@@ -86,6 +87,27 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
 
       var progress = this.position / this.source.buffer.duration;
       this.progress.circleProgress({ value: progress });
+
+      this.analyser.getByteFrequencyData(this.freqs);
+
+      var ctx = this.frequencyCanvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.clearRect(0, 0, this.frequencyCanvas.width, this.frequencyCanvas.height);
+
+      for (var i = 0, j = 0; i < this.analyser.frequencyBinCount; i++) {
+        if(i % 2 != 0){
+          continue;
+        }
+        var value = this.freqs[i];
+        var percent = value / 256;
+        var height = 160 * Math.pow(percent, 3);
+        var offset = (268/2 - height) / 2 + 8;
+        var barWidth = 268 / this.analyser.frequencyBinCount * 4 / 2;
+        ctx.fillRect(268/2 + 12.2 + j * barWidth, offset, barWidth, height);
+        ctx.fillRect(268/2 + 11.8 - j * barWidth, offset, barWidth, height);
+
+        j++;
+      }
 
       requestAnimationFrame(this.timeUpdate.bind(this));
     }
