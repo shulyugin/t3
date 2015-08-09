@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Player</title>
+  <!-- styles -->
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/player.css">
+  <!-- jQuery+ -->
+  <script src="js/lib/jquery/jquery.min.js"></script>
+  <script src="js/lib/jquery/jquery.transit.min.js"></script>
+  <!-- https://github.com/janl/mustache.js -->
+  <script src="js/lib/mustache.min.js"></script>
+  <!-- https://github.com/aadsm/JavaScript-ID3-Reader -->
+  <script src="js/lib/id3.min.js"></script>
+  <!-- http://requirejs.org -->
+  <script data-main="js/app/init" src="js/lib/require.min.js"></script>
+</head>
+<body>
+  <label class="uploader" for="fileChooser">
+    <input id="fileChooser" type="file" multiple="multiple" name="files[]" accept="audio/*" />
+  </label>
+</body>
+</html>
