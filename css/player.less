@@ -16,6 +16,7 @@
 
 * {
   font-family: sans-serif;
+  color: #333;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -182,7 +183,6 @@
 
     &-song {
       font-size: 18px;
-      color: #333;
       text-align: center;
     }
     &-author {
@@ -204,6 +204,59 @@
     &-label {
       font-size: 10px;
     }
+  }
+}
+
+.playlist {
+  clear: left;
+  float: left;
+  margin: 40px 20px;
+
+  &-item {
+    padding: 2px 8px;
+    border-bottom: 1px solid #ccc;
+    font-size: 14px;
+    cursor: pointer;
+
+    &:first-child {
+      border-top: 1px solid #ccc;
+    }
+
+    &:hover {
+      background-color: #fafafa;
+    }
+
+    &-duration {
+      float: right;
+      width: 40px;
+      visibility: hidden;
+      text-align: right;
+    }
+
+    &.active {
+      position: relative;
+      background-color: #333 !important;
+
+      cursor: url('../i/seek.ico'), pointer;
+
+      &>span {
+        position: relative;
+        z-index: 2;
+        color: #fff !important;
+        visibility: visible !important;
+      }
+
+      .playlist-item-progress {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        background-color: #666;
+      }
+    }
+
   }
 }
 

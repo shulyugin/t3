@@ -1,4 +1,4 @@
-define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/Equalizer'
+define(['model/AudioContext', 'controller/Playlist', 'model/AudioFile', 'controller/Equalizer'
 ], function (audioContext, Playlist, AudioFile, Equalizer){
 
   function Player (){
@@ -60,7 +60,7 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
     requestAnimationFrame(this.timeUpdate.bind(this));
   }
 
-  Player.prototype.play = function() {
+  Player.prototype.play = function(isNewTrack) {
     if(this.isPlaying) {
       return;
     }
@@ -85,16 +85,20 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
         this.source.buffer = audioBuffer;
 
         this.source.onended = function (e){
-          var progress = this.position / this.source.buffer.duration;
+          var progress = this.position / this.source.buffer.duration * 100;
           if(progress >= 99.9) {
             this.next();
           }
         }.bind(this);
 
         // todo: in param
-        this.source.loop = true;
+        //this.source.loop = true;
 
-        this.position = this.position || 0;
+        if(isNewTrack) {
+          this.position = 0;
+        } else {
+          this.position = this.position || 0;
+        }
         this.startTime = audioContext.currentTime - this.position;
         this.source.start(0, this.position);
 
@@ -120,6 +124,8 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
 
       var progress = this.position / this.source.buffer.duration;
       this.progress.circleProgress({ value: progress });
+
+      this.$node.trigger('progress', progress);
     }
 
     this.analyser.getByteFrequencyData(this.freqs);
@@ -146,6 +152,12 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
     requestAnimationFrame(this.timeUpdate.bind(this));
   }
 
+  Player.prototype.seek = function(percent) {
+    this.pause();
+    this.position = (percent / 100) * this.source.buffer.duration;
+    this.play();
+  };
+
   Player.prototype.pause = function() {
     if(!this.isPlaying) {
       return;
@@ -169,14 +181,14 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
     this.pause();
     this.playlist.prev();
     this.position = 0;
-    this.play();
+    this.play(true);
   }
 
   Player.prototype.next = function() {
     this.pause();
     this.playlist.next();
     this.position = 0;
-    this.play();
+    this.play(true);
   }
 
   Player.prototype.bindEvents = function() {
@@ -204,5 +216,6 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
     $('#playerNext').on('click', this.next.bind(this));
   };
 
-  return Player;
+  // singleton
+  return new Player();
 });

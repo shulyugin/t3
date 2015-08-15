@@ -1,6 +1,6 @@
 define(['model/AudioFile'], function (AudioFile){
 
-  function Playlist (){
+  function AudioFileList (){
     this.audioFiles = [];
 
     this.current;
@@ -10,16 +10,18 @@ define(['model/AudioFile'], function (AudioFile){
     this.random = false;
   }
 
-  Playlist.prototype.addFile = function (file){
+  AudioFileList.prototype.addFile = function (file){
     var fileExists = this.audioFiles.some(function (audioFile){
       return audioFile.file.name === file.name;
     });
     if(!fileExists){
       this.audioFiles.push(new AudioFile(file));
+      return true;
     }
+    return false;
   };
 
-  Playlist.prototype.addFileList = function (files){
+  AudioFileList.prototype.addFileList = function (files){
     if(files instanceof FileList) {
       files = Array.prototype.slice.apply(files);
     } else if(!(files instanceof Array)) {
@@ -30,14 +32,39 @@ define(['model/AudioFile'], function (AudioFile){
     }.bind(this));
   };
 
-  Playlist.prototype.getCurrent = function() {
+  AudioFileList.prototype.get = function(idx) {
+    if(idx >= 0 && idx < this.audioFiles.length) {
+      return this.audioFiles[idx];
+    }
+    return false;
+  };
+
+  AudioFileList.prototype.set = function(audioFile) {
+    if(!(audioFile instanceof AudioFile) || this.indexOf(audioFile) == -1) {
+      return false;
+    }
+    this.current = audioFile;
+    return true;
+  };
+
+  AudioFileList.prototype.getCurrent = function() {
     if(!this.current && this.audioFiles.length > 0) {
       this.current = this.audioFiles[0];
     }
     return this.current || null;
   };
 
-  Playlist.prototype.prev = function() {
+  AudioFileList.prototype.getLast = function() {
+    if(this.audioFiles.length > 0) {
+      return this.audioFiles[this.audioFiles.length - 1];
+    }
+  };
+
+  AudioFileList.prototype.indexOf = function(audioFile) {
+    return this.audioFiles.indexOf(audioFile);
+  }
+
+  AudioFileList.prototype.prev = function() {
     if(!this.current) {
       return this.getCurrent();
     }
@@ -56,7 +83,7 @@ define(['model/AudioFile'], function (AudioFile){
     return this.current;
   };
 
-  Playlist.prototype.next = function() {
+  AudioFileList.prototype.next = function() {
     if(!this.current) {
       return this.getCurrent();
     }
@@ -75,11 +102,11 @@ define(['model/AudioFile'], function (AudioFile){
     return this.current;
   };
 
-  Playlist.fromFiles = function (files){
-    var playlist = new Playlist();
-    playlist.addFileList(files);
-    return playlist;
+  AudioFileList.fromFiles = function (files){
+    var AudioFileList = new AudioFileList();
+    AudioFileList.addFileList(files);
+    return AudioFileList;
   };
 
-  return Playlist;
+  return AudioFileList;
 });

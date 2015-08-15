@@ -41,6 +41,7 @@ define(['model/AudioContext'], function (audioContext){
       reader.onload = function (e){
         var arrayBuffer = e.target.result;
         audioContext.decodeAudioData(arrayBuffer, function(audioBuffer) {
+          // audioBuffer.duration for length in seconds
           this.audioBuffer.resolve(audioBuffer);
         }.bind(this));
       }.bind(this);
