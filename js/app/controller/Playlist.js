@@ -1,11 +1,15 @@
-define(['model/AudioFileList'], function (AudioFileList){
+define(['utility/inheritance', 'controller/Abstract', 'model/AudioFileList'
+], function (inheritance, AbstractController, AudioFileList){
 
   function Playlist (){
+    inheritance.getSuperPrototype(Playlist).constructor.call(this);
+
     this.$node = $('#playlist');
     this.tracks = new AudioFileList();
 
     this.bindEvents();
   }
+  inheritance.inherits(Playlist, AbstractController);
 
   Playlist.prototype.addFileList = function(files) {
     if(files instanceof FileList) {
@@ -17,7 +21,7 @@ define(['model/AudioFileList'], function (AudioFileList){
       if(this.tracks.addFile(file)) {
         var audioFile = this.tracks.getLast();
         audioFile.getTags().then(function (tags){
-          this.getControlTemplate().then(function(tpl) {
+          this.getTemplate('js/app/view/playlist.item.mustache').then(function(tpl) {
             var params = {
               id: 'track' + this.tracks.indexOf(audioFile),
               trackIdx: this.tracks.indexOf(audioFile),
@@ -72,18 +76,6 @@ define(['model/AudioFileList'], function (AudioFileList){
     }.bind(this));
   };
 
-  Playlist.prototype.getControlTemplate = (function() {
-    var templateLoadPromise = $.Deferred();
-    return function() {
-      if(templateLoadPromise.state() === 'pending'){
-        $.get('js/app/view/playlist.item.mustache').then(function(tpl) {
-          templateLoadPromise.resolve(tpl);
-        });
-      }
-      return templateLoadPromise.promise();
-    };
-  })();
-
   Playlist.prototype.getCurrent = function() {
     return this.tracks.getCurrent();
   };
@@ -101,7 +93,7 @@ define(['model/AudioFileList'], function (AudioFileList){
       if(isPlaying) {
         var idx = this.tracks.indexOf(this.tracks.getCurrent());
 
-        var duration = player.source.buffer.duration;
+        var duration = window.player.source.buffer.duration;
         var minutes = parseInt(duration / 60, 10);
         var seconds = parseInt(duration % 60, 10);
         if(seconds < 10) {
@@ -115,12 +107,21 @@ define(['model/AudioFileList'], function (AudioFileList){
         this.active = $('#track' + idx);
         this.active.addClass('active');
         this.activeProgress = this.active.find('[data-track-progress]');
+        this.activePosition = this.active.find('[data-track-position]');
         this.active.find('[data-track-duration]').html(minutes + ':' + seconds);
       }
     }.bind(this));
 
     $('#player').on('progress', function(e, progress) {
       this.activeProgress.width(progress * 100 + '%');
+
+      var secondsPassed = parseInt(progress * window.player.source.buffer.duration, 10);
+      var minutes = parseInt(secondsPassed / 60, 10);
+      var seconds = parseInt(secondsPassed % 60, 10);
+      if(seconds < 10) {
+        seconds = '0' + seconds;
+      }
+      this.activePosition.html(minutes + ':' + seconds);
     }.bind(this));
   }
 

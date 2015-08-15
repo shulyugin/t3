@@ -1,7 +1,9 @@
-define(['model/AudioContext', 'controller/Playlist', 'model/AudioFile', 'controller/Equalizer'
-], function (audioContext, Playlist, AudioFile, Equalizer){
+define(['utility/inheritance', 'controller/Abstract', 'model/AudioContext', 'controller/Playlist', 'model/AudioFile', 'controller/Equalizer'
+], function (inheritance, AbstractController, audioContext, Playlist, AudioFile, Equalizer){
 
   function Player (){
+    inheritance.getSuperPrototype(Player).constructor.call(this);
+
     this.$node = $('#player');
     this.playlist = new Playlist();
 
@@ -40,6 +42,11 @@ define(['model/AudioContext', 'controller/Playlist', 'model/AudioFile', 'control
       this.equalizer.appendFilter(freq);
     }.bind(this));
 
+    // equalizer presets
+    Object.keys(presets).forEach(function(key) {
+      this.equalizer.appendPreset(key, presets[key]);
+    }.bind(this));
+
     this.equalizer.connect(this.volume);
     this.volume.connect(this.analyser);
     this.analyser.connect(audioContext.destination);
@@ -59,6 +66,7 @@ define(['model/AudioContext', 'controller/Playlist', 'model/AudioFile', 'control
     this.bindEvents();
     requestAnimationFrame(this.timeUpdate.bind(this));
   }
+  inheritance.inherits(Player, AbstractController);
 
   Player.prototype.play = function(isNewTrack) {
     if(this.isPlaying) {
@@ -214,6 +222,28 @@ define(['model/AudioContext', 'controller/Playlist', 'model/AudioFile', 'control
     }.bind(this));
     $('#playerPrev').on('click', this.prev.bind(this));
     $('#playerNext').on('click', this.next.bind(this));
+  };
+
+  // equalizer presets from VLC
+  var presets = {
+    "Flat": {60:0, 170:0, 310:0, 600:0, 1000:0, 3000:0, 6000:0, 12000:0, 14000:0, 16000:0},
+    "Classical": {60:0, 170:0, 310:0, 600:0, 1000:0, 3000:0, 6000:-3, 12000:-3, 14000:-3, 16000:-4},
+    "Club": {60:0, 170:0, 310:3, 600:2, 1000:2, 3000:2, 6000:1, 12000:0, 14000:0, 16000:0},
+    "Dance": {60:4, 170:3, 310:1, 600:0, 1000:0, 3000:-2, 6000:-2, 12000:-3, 14000:0, 16000:0},
+    "Full bass": {60:-3, 170:4, 310:4, 600:2, 1000:1, 3000:-2, 6000:-4, 12000:-4, 14000:-4, 16000:-4},
+    "Bass and treble": {60:3, 170:2, 310:0, 600:-3, 1000:-2, 3000:1, 6000:3, 12000:4, 14000:5, 16000:5},
+    "Full treble": {60:-4, 170:-4, 310:-4, 600:-2, 1000:1, 3000:4, 6000:6, 12000:6, 14000:6, 16000:7},
+    "Headphones": {60:2, 170:4, 310:2, 600:-1, 1000:-1, 3000:0, 6000:2, 12000:4, 14000:5, 16000:6},
+    "Large hall": {60:4, 170:4, 310:2, 600:2, 1000:0, 3000:-2, 6000:-2, 12000:-2, 14000:0, 16000:0},
+    "Live": {60:2, 170:0, 310:1, 600:2, 1000:2, 3000:2, 6000:1, 12000:1, 14000:1, 16000:1},
+    "Party": {60:3, 170:3, 310:0, 600:0, 1000:0, 3000:0, 6000:0, 12000:0, 14000:3, 16000:3},
+    "Pop": {60:0, 170:2, 310:3, 600:3, 1000:2, 3000:0, 6000:-1, 12000:-1, 14000:0, 16000:0},
+    "Reggae": {60:0, 170:0, 310:0, 600:-2, 1000:0, 3000:3, 6000:3, 12000:0, 14000:0, 16000:0},
+    "Rock": {60:3, 170:2, 310:-2, 600:-3, 1000:-1, 3000:2, 6000:4, 12000:5, 14000:5, 16000:5},
+    "Ska": {60:-1, 170:-2, 310:-2, 600:0, 1000:1, 3000:2, 6000:4, 12000:4, 14000:5, 16000:4},
+    "Soft": {60:2, 170:1, 310:0, 600:-1, 1000:0, 3000:1, 6000:3, 12000:4, 14000:5, 16000:5},
+    "Soft rock": {60:2, 170:2, 310:1, 600:0, 1000:-2, 3000:-2, 6000:-1, 12000:0, 14000:1, 16000:4},
+    "Techno": {60:3, 170:2, 310:0, 600:-2, 1000:-2, 3000:0, 6000:3, 12000:4, 14000:4, 16000:4}
   };
 
   // singleton

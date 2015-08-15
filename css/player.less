@@ -228,9 +228,16 @@
 
     &-duration {
       float: right;
-      width: 40px;
+      width: 70px;
+      padding-top: 2px;
+      margin-left: 15px;
+      
       visibility: hidden;
+
+      font-size: 11px;
+      font-weight: 600;
       text-align: right;
+      white-space: nowrap;
     }
 
     &.active {
@@ -239,7 +246,7 @@
 
       cursor: url('../i/seek.ico'), pointer;
 
-      &>span {
+      * {
         position: relative;
         z-index: 2;
         color: #fff !important;
