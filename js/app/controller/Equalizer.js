@@ -1,6 +1,8 @@
 define(['model/AudioContext'], function (audioContext){
 
   function Equalizer (){
+    this.$node = $('#equalizer');
+
     this.filters = [];
     this.output;
   }
@@ -23,24 +25,55 @@ define(['model/AudioContext'], function (audioContext){
       }
     }
 
-    // todo: optimize
-    var eqSlider = document.createElement('div');
-    eqSlider.id = 'eqSlider' + this.filters.indexOf(filter);
-    $('#equalizer').append(eqSlider);
-    $('#' + 'eqSlider' + this.filters.indexOf(filter)).slider({
-      orientation: "vertical",
-      range: "min",
-      min: 0,
-      max: 100,
-      value: 50,
-      slide: function(event, ui) {
-        this.gain.value = (ui.value - 50) / 5; // centered
-        console.log(this.gain.value);
-      }.bind(filter)
-    }).css({
-      float: 'left',
-      marginRight: 14
+    this.getControlTemplate().then(function(tpl) {
+      var params = {
+        id: 'eq' + this.filters.indexOf(filter),
+        max: '+10',
+        min: '-10'
+      };
+      var rendered = Mustache.render(tpl, params);
+      this.$node.append(rendered);
+
+      $('#' + params.id).find('[data-slider]').slider({
+        orientation: 'vertical',
+        range: 'min',
+        min: 0,
+        max: 100,
+        value: 50,
+        slide: function(event, ui) {
+          this.gain.value = (ui.value - 50) / 5; // centered
+          console.log(this.gain.value);
+        }.bind(filter)
+      });
+    }.bind(this));
+  };
+
+  Equalizer.prototype.getControlTemplate = (function() {
+    var templateLoadPromise = $.Deferred();
+    return function() {
+      if(templateLoadPromise.state() === 'pending'){
+        $.get('js/app/view/equalizer.item.mustache').then(function(tpl) {
+          templateLoadPromise.resolve(tpl);
+        });
+      }
+      return templateLoadPromise.promise();
+    };
+  })();
+
+  Equalizer.prototype.removeFilter = function(frequency) {
+    var filtersMatched = this.filters.filter(function(f) {
+      return f.frequency.value == frequency;
     });
+    if(filtersMatched.length == 1) {
+      var idx = this.filters.indexOf(filtersMatched[0]);
+      if(idx != -1) {
+        $('#eq' + idx).remove();
+        this.filters.splice(idx, 1);
+        return true;
+      }
+      return false;
+    }
+    return false;
   };
 
   Equalizer.prototype.connect = function(output) {

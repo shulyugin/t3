@@ -20,8 +20,12 @@
 </head>
 <body>
   <input id="fileChooser" type="file" multiple="multiple" name="files[]" accept="audio/*" />
-  <div id="equalizer" style="float: right; margin: 40px 60px 0 0;">
-
+  <div id="equalizer" class="equalizer">
+    <div id="volumeControl" class="equalizer-control">
+      <div class="equalizer-control-label">100</div>
+      <div class="equalizer-control-slider" data-slider="true"></div>
+      <div class="equalizer-control-label">0</div>
+    </div>
   </div>
   <div id="player" class="player">
     <label class="player-uploader" for="fileChooser">
@@ -29,13 +33,17 @@
     </label>
     <div id="circleProgress" class="player-progress"></div>
     <canvas id="frequency" class="player-frequency"></canvas>
-    <div id="playerCover" class="player-cover" style="background-image: url(i/cover.jpg)"></div>
+    <div class="player-cover" style="background-image: url(i/cover.jpg)" data-song-cover="true"></div>
     <div class="player-control">
       <div class="player-control-sound"></div>
       <div class="player-control-menu"></div>
       <div id="playerPrev" class="player-control-prev"></div>
       <div id="playerNext" class="player-control-next"></div>
       <div id="playerPlayPause" class="player-control-play"></div>
+    </div>
+    <div class="player-info">
+      <p class="player-info-song" data-song-name="true"></p>
+      <p class="player-info-author" data-song-author="true"></p>
     </div>
   </div>
 </body>

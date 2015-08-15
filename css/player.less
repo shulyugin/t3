@@ -14,14 +14,19 @@
   user-select: none;
 }
 
+* {
+  font-family: sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
 .player {
   position: fixed;
   top: 50%;
   left: 50%;
 
   width: 268px;
-  height: 320px;
-  margin: -320px/2 0 0 -268px/2;
+  height: 360px;
+  margin: -360px/2 0 0 -268px/2;
 
   &-uploader {
     // display: block;
@@ -169,6 +174,35 @@
         .icon-pause;
         background-position: 30px 26px;
       }
+    }
+  }
+
+  &-info {
+    margin-top: 43px;
+
+    &-song {
+      font-size: 18px;
+      color: #333;
+      text-align: center;
+    }
+    &-author {
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+    }
+  }
+}
+
+.equalizer {
+  float: right;
+  margin: 40px 60px 0 0;
+
+  &-control {
+    float: left;
+    margin-right: 14px;
+
+    &-label {
+      font-size: 10px;
     }
   }
 }

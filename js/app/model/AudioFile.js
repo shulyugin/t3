@@ -22,9 +22,9 @@ define(['model/AudioContext'], function (audioContext){
           var base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
         }
         this.tags.resolve({
-          album: tags['album'],
-          artist: tags['artist'],
-          title: tags['title'],
+          album: tags['album'] || '',
+          artist: tags['artist'] || '',
+          title: tags['title'] || this.file.name.match(/[^\.]*/)[0] || '',
           coverSrc: image? base64 : null
         });
       }.bind(this), {

@@ -18,8 +18,20 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
     this.frequencyCanvas = document.getElementById('frequency');
     this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
 
-    this.gain = audioContext.createGain();
-    this.gain.gain.value = 0.69;
+    this.volume = audioContext.createGain();
+    this.volume.gain.value = 1;
+    $('#volumeControl').find('[data-slider]').slider({
+      orientation: 'vertical',
+      range: 'min',
+      min: 0,
+      max: 100,
+      value: 50,
+      slide: function(event, ui) {
+        this.volume.gain.value = ui.value / 50; // from 0 to 2 dB
+        this.cachedVolume = this.volume.gain.value;
+        console.log(this.volume.gain.value);
+      }.bind(this)
+    });
 
     // equalizer
     this.equalizer = new Equalizer();
@@ -28,9 +40,9 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
       this.equalizer.appendFilter(freq);
     }.bind(this));
 
-    this.equalizer.connect(this.analyser);
-    this.analyser.connect(this.gain);
-    this.gain.connect(audioContext.destination);
+    this.equalizer.connect(this.volume);
+    this.volume.connect(this.analyser);
+    this.analyser.connect(audioContext.destination);
 
     this.progress = $('#circleProgress').circleProgress({
       startAngle: -Math.PI / 2,
@@ -41,21 +53,29 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
           easing: 'circleProgressEasing'
       },
       value: 0,
-      fill: { color: '#555555' }
+      fill: { color: '#555' }
     });
 
     this.bindEvents();
+    requestAnimationFrame(this.timeUpdate.bind(this));
   }
 
   Player.prototype.play = function() {
     if(this.isPlaying) {
       return;
     }
+    if(this.pauseTimeoute) {
+      clearTimeout(this.pauseTimeoute);
+    }
     if(this.source) {
       this.source.disconnect(this.equalizer.getConnection());
     }
     this.source = audioContext.createBufferSource();
     this.source.connect(this.equalizer.getConnection());
+
+    if(typeof this.cachedVolume !== 'undefined') {
+      this.volume.gain.value = this.cachedVolume;
+    }
 
     var current = this.playlist.getCurrent();
     if(current) {
@@ -80,8 +100,6 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
 
         this.isPlaying = true;
         this.$node.trigger('play', true);
-
-        requestAnimationFrame(this.timeUpdate.bind(this));
       }.bind(this));
     }
   };
@@ -89,7 +107,9 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
   Player.prototype.setTags = function(audioFile) {
     if(audioFile instanceof AudioFile) {
       audioFile.getTags().then(function (tags){
-        $('#playerCover').css('background-image', 'url(src)'.replace('src', tags.coverSrc || 'i/cover.jpg'));
+        $('[data-song-cover]').css('background-image', 'url(src)'.replace('src', tags.coverSrc || 'i/cover.jpg'));
+        $('[data-song-name]').html(tags.title);
+        $('[data-song-author]').html(tags.artist || tags.album);
       });
     }
   };
@@ -100,37 +120,44 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/E
 
       var progress = this.position / this.source.buffer.duration;
       this.progress.circleProgress({ value: progress });
-
-      this.analyser.getByteFrequencyData(this.freqs);
-
-      var ctx = this.frequencyCanvas.getContext('2d');
-      ctx.fillStyle = '#fff';
-      ctx.clearRect(0, 0, this.frequencyCanvas.width, this.frequencyCanvas.height);
-
-      for (var i = 0, j = 0; i < this.analyser.frequencyBinCount; i++) {
-        if(i % 2 != 0){
-          continue;
-        }
-        var value = this.freqs[i];
-        var percent = value / 256;
-        var height = 160 * Math.pow(percent, 3);
-        var offset = (268/2 - height) / 2 + 8;
-        var barWidth = 268 / this.analyser.frequencyBinCount * 4 / 2;
-        ctx.fillRect(268/2 + 16.2 + j * barWidth, offset, barWidth, height);
-        ctx.fillRect(268/2 + 15.8 - j * barWidth, offset, barWidth, height);
-
-        j++;
-      }
-
-      requestAnimationFrame(this.timeUpdate.bind(this));
     }
+
+    this.analyser.getByteFrequencyData(this.freqs);
+
+    var ctx = this.frequencyCanvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.clearRect(0, 0, this.frequencyCanvas.width, this.frequencyCanvas.height);
+
+    for (var i = 0, j = 0; i < this.analyser.frequencyBinCount; i++) {
+      if(i % 2 != 0){
+        continue;
+      }
+      var value = this.freqs[i];
+      var percent = value / 256;
+      var height = 160 * Math.pow(percent, 3);
+      var offset = (268/2 - height) / 2 + 8;
+      var barWidth = 268 / this.analyser.frequencyBinCount * 4 / 2;
+      ctx.fillRect(268/2 + 16.2 + j * barWidth, offset, barWidth, height);
+      ctx.fillRect(268/2 + 15.8 - j * barWidth, offset, barWidth, height);
+
+      j++;
+    }
+
+    requestAnimationFrame(this.timeUpdate.bind(this));
   }
 
   Player.prototype.pause = function() {
     if(!this.isPlaying) {
       return;
     }
-    this.source.stop(0);
+    this.cachedVolume = this.volume.gain.value;
+    this.volume.gain.value = 0;
+    this.pauseTimeoute = setTimeout(function() {
+      // cause a waveform to fade with animation
+      requestAnimationFrame(function() {
+        this.source.stop();
+      }.bind(this));
+    }.bind(this), 250);
 
     this.position = audioContext.currentTime - this.startTime;
 
