@@ -4,9 +4,11 @@
   <title>Player</title>
   <!-- styles -->
   <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="js/lib/jquery/ui/jquery-ui.min.css">
   <link rel="stylesheet" href="css/player.css">
   <!-- jQuery+ -->
   <script src="js/lib/jquery/jquery.min.js"></script>
+  <script src="js/lib/jquery/ui/jquery-ui.min.js"></script>
   <script src="js/lib/jquery/jquery.transit.min.js"></script>
   <script src="js/lib/jquery/jquery.circle-progress.js"></script>
   <!-- https://github.com/janl/mustache.js -->
@@ -18,13 +20,16 @@
 </head>
 <body>
   <input id="fileChooser" type="file" multiple="multiple" name="files[]" accept="audio/*" />
+  <div id="equalizer" style="float: right; margin: 40px 60px 0 0;">
+
+  </div>
   <div id="player" class="player">
     <label class="player-uploader" for="fileChooser">
       <input id="fileChooser" type="file" multiple="multiple" name="files[]" accept="audio/*" />
     </label>
     <div id="circleProgress" class="player-progress"></div>
     <canvas id="frequency" class="player-frequency"></canvas>
-    <div id="playerCover" class="player-cover"></div>
+    <div id="playerCover" class="player-cover" style="background-image: url(i/cover.jpg)"></div>
     <div class="player-control">
       <div class="player-control-sound"></div>
       <div class="player-control-menu"></div>

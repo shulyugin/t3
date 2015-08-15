@@ -1,5 +1,5 @@
-define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
-], function (audioContext, Playlist, AudioFile){
+define(['model/AudioContext', 'model/Playlist', 'model/AudioFile', 'controller/Equalizer'
+], function (audioContext, Playlist, AudioFile, Equalizer){
 
   function Player (){
     this.$node = $('#player');
@@ -14,13 +14,21 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
     this.analyser.smoothingTimeConstant = 0.8;
     this.analyser.fftSize = 2048;
 
+    // visualisation
     this.frequencyCanvas = document.getElementById('frequency');
     this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
 
     this.gain = audioContext.createGain();
     this.gain.gain.value = 0.69;
 
-    // visualisation
+    // equalizer
+    this.equalizer = new Equalizer();
+    var frequencies = [60, 170, 310, 600, 1000, 3000, 6000, 12000, 14000, 16000];
+    frequencies.forEach(function (freq){
+      this.equalizer.appendFilter(freq);
+    }.bind(this));
+
+    this.equalizer.connect(this.analyser);
     this.analyser.connect(this.gain);
     this.gain.connect(audioContext.destination);
 
@@ -44,10 +52,10 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
       return;
     }
     if(this.source) {
-      this.source.disconnect(this.analyser);
+      this.source.disconnect(this.equalizer.getConnection());
     }
     this.source = audioContext.createBufferSource();
-    this.source.connect(this.analyser);
+    this.source.connect(this.equalizer.getConnection());
 
     var current = this.playlist.getCurrent();
     if(current) {
@@ -55,6 +63,16 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
 
       current.getAudioBuffer().then(function (audioBuffer){
         this.source.buffer = audioBuffer;
+
+        this.source.onended = function (e){
+          var progress = this.position / this.source.buffer.duration;
+          if(progress >= 99.9) {
+            this.next();
+          }
+        }.bind(this);
+
+        // todo: in param
+        this.source.loop = true;
 
         this.position = this.position || 0;
         this.startTime = audioContext.currentTime - this.position;
@@ -71,7 +89,7 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
   Player.prototype.setTags = function(audioFile) {
     if(audioFile instanceof AudioFile) {
       audioFile.getTags().then(function (tags){
-        $('#playerCover').css('background-image', 'url(src)'.replace('src', tags.coverSrc));
+        $('#playerCover').css('background-image', 'url(src)'.replace('src', tags.coverSrc || 'i/cover.jpg'));
       });
     }
   };
@@ -79,11 +97,6 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
   Player.prototype.timeUpdate = function() {
     if(this.isPlaying) {
       this.position = audioContext.currentTime - this.startTime;
-
-      if (this.position >= this.source.buffer.duration) {
-        this.position = this.buffer.duration;
-        this.pause();
-      }
 
       var progress = this.position / this.source.buffer.duration;
       this.progress.circleProgress({ value: progress });
@@ -103,8 +116,8 @@ define(['model/AudioContext', 'model/Playlist', 'model/AudioFile'
         var height = 160 * Math.pow(percent, 3);
         var offset = (268/2 - height) / 2 + 8;
         var barWidth = 268 / this.analyser.frequencyBinCount * 4 / 2;
-        ctx.fillRect(268/2 + 12.2 + j * barWidth, offset, barWidth, height);
-        ctx.fillRect(268/2 + 11.8 - j * barWidth, offset, barWidth, height);
+        ctx.fillRect(268/2 + 16.2 + j * barWidth, offset, barWidth, height);
+        ctx.fillRect(268/2 + 15.8 - j * barWidth, offset, barWidth, height);
 
         j++;
       }
