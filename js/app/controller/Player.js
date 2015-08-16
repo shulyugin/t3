@@ -64,6 +64,7 @@ define(['utility/inheritance', 'controller/Abstract', 'model/AudioContext', 'con
     });
 
     this.bindEvents();
+    this.initDropZone();
     requestAnimationFrame(this.timeUpdate.bind(this));
   }
   inheritance.inherits(Player, AbstractController);
@@ -201,9 +202,15 @@ define(['utility/inheritance', 'controller/Abstract', 'model/AudioContext', 'con
 
   Player.prototype.bindEvents = function() {
     $('#fileChooser').on('change', function (event){
-      this.playlist.addFileList(event.target.files);
-      if(!this.isPlaying) {
-        this.play();
+      var inited = this.playlist.getCount() > 0;
+      if(this.playlist.addFileList(event.target.files)) {
+        this.$node.removeClass('upload');
+        if(!inited) {
+          this.runStartAnimation();
+        }
+        if(!this.isPlaying) {
+          this.play();
+        }
       }
     }.bind(this));
     $('#playerPlayPause').on('click', function(e) {
@@ -222,6 +229,73 @@ define(['utility/inheritance', 'controller/Abstract', 'model/AudioContext', 'con
     }.bind(this));
     $('#playerPrev').on('click', this.prev.bind(this));
     $('#playerNext').on('click', this.next.bind(this));
+    $('#showEqualizer').on('click', function() {
+      if(this.equalizer.$node.hasClass('shown')) {
+        this.equalizer.$node.removeClass('shown');
+      } else {
+        this.equalizer.$node.addClass('shown');
+        this.playlist.$node.removeClass('shown');
+        var offset = -1 * this.equalizer.$node.height() / 2 - 92 / 2 - 40;
+        this.equalizer.$node.css({marginTop: offset});
+      }
+    }.bind(this));
+    $('#showPlaylist').on('click', function() {
+      if(this.playlist.$node.hasClass('shown')) {
+        this.playlist.$node.removeClass('shown');
+      } else {
+        this.playlist.$node.addClass('shown');
+        this.equalizer.$node.removeClass('shown');
+        var offset = -1 * this.playlist.$node.height() / 2 - 92 / 2;
+        this.playlist.$node.css({marginTop: offset});
+      }
+    }.bind(this));
+  };
+
+  Player.prototype.initDropZone = function() {
+    var dropZone = $('#dropZone');
+    dropZone.on('dragenter', function(e) {
+      dropZone.addClass('hovered');
+    }.bind(this));
+    dropZone.on('dragleave', function(e) {
+      dropZone.removeClass('hovered');
+      if(this.playlist.getCount() > 0) {
+        this.$node.removeClass('upload');
+      }
+    }.bind(this));
+    dropZone.on('drop', function(e) {
+      dropZone.removeClass('hovered');
+      var inited = this.playlist.getCount() > 0;
+      if(this.playlist.addFileList(event.dataTransfer.files)) {
+        this.$node.removeClass('upload');
+        if(!inited) {
+          this.runStartAnimation();
+        }
+        if(!this.isPlaying) {
+          this.play();
+        }
+      }
+    }.bind(this));
+    $('.player-control').on('dragenter', function(e) {
+      this.$node.addClass('upload');
+      e.preventDefault();
+    }.bind(this));
+    window.addEventListener('dragenter', function(e) {
+      e.preventDefault();
+    });
+    window.addEventListener('dragover', function(e) {
+      e.preventDefault();
+    });
+    window.addEventListener('drop', function(e) {
+      e.preventDefault();
+    });
+  };
+
+  Player.prototype.runStartAnimation = function() {
+    this.$node.addClass('animateIn'); // css animations
+    setTimeout(function() {
+      this.$node.removeClass('animated');
+      this.$node.removeClass('animateIn');
+    }.bind(this), 2250);
   };
 
   // equalizer presets from VLC

@@ -17,6 +17,9 @@ define(['utility/inheritance', 'controller/Abstract', 'model/AudioFileList'
     } else if(!(files instanceof Array)) {
       return;
     }
+    files = files.filter(function(file) {
+      return file.type.indexOf('audio') != -1;
+    });
     files.forEach(function (file){
       if(this.tracks.addFile(file)) {
         var audioFile = this.tracks.getLast();
@@ -74,10 +77,15 @@ define(['utility/inheritance', 'controller/Abstract', 'model/AudioFileList'
         }.bind(this));
       }
     }.bind(this));
+    return files.length;
   };
 
   Playlist.prototype.getCurrent = function() {
     return this.tracks.getCurrent();
+  };
+
+  Playlist.prototype.getCount = function() {
+    return this.tracks.getCount();
   };
 
   Playlist.prototype.prev = function() {

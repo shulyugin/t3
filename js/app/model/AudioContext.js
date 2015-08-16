@@ -1,3 +1,3 @@
 define([], function (){
-  return new AudioContext() || new webkitAudioContext();
+  return typeof AudioContext !== 'undefined' ? new AudioContext() : new webkitAudioContext();
 });

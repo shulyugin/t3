@@ -4,6 +4,7 @@ define(['model/AudioFile'], function (AudioFile){
     this.audioFiles = [];
 
     this.current;
+    this.length = 0;
 
     // settings
     this.repeatAll = true;
@@ -46,6 +47,10 @@ define(['model/AudioFile'], function (AudioFile){
     this.current = audioFile;
     return true;
   };
+
+  AudioFileList.prototype.getCount = function() {
+    return this.audioFiles.length;
+  }
 
   AudioFileList.prototype.getCurrent = function() {
     if(!this.current && this.audioFiles.length > 0) {

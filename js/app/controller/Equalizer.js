@@ -35,6 +35,7 @@ define(['utility/inheritance', 'controller/Abstract', 'model/AudioContext'
     this.getTemplate('js/app/view/equalizer.item.mustache').then(function(tpl) {
       var params = {
         id: 'eq' + this.filters.indexOf(filter),
+        name: frequency / 1000 >= 1 ? parseInt(frequency / 1000, 10) + 'K' : frequency,
         max: '+10',
         min: '-10',
         freq: frequency
